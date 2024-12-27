@@ -1,184 +1,290 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.SqlClient;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using System.Windows.Forms;
+using System.Data;
+using System.Drawing;
 
-namespace BTN
+namespace MYAPP
 {
-    public partial class Form1 : Form
+    public partial class FrmDoUong : Form
+
+
     {
-        string sCon = "Data Source=ADMIN-PC;Initial Catalog=Banhang;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
-        public Form1()
+        SqlConnection con;
+        SqlDataAdapter adapter;
+        DataSet ds;
+        string connectionString = "Server=DESKTOP-D6GG4N0;Database=Banhang;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;";
+
+        public FrmDoUong()
         {
             InitializeComponent();
         }
-
-        private void Form1_Load(object sender, EventArgs e)
+        private void ConnectToDatabase()
         {
-            SqlConnection con = new SqlConnection(sCon);
-            try
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                con.Open();
+                try
+                {
+                    connection.Open();
+                    MessageBox.Show("Connection Successful!");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Connection Failed: {ex.Message}");
+                }
             }
-            catch (Exception ex1)
-            {
-                MessageBox.Show("Xảy ra lỗi trong quá trình kết nối DB");
-            }
-            string sQuery = "select * from khachhang";
-            SqlDataAdapter adapter = new SqlDataAdapter(sQuery, con);
-
-            DataSet ds = new DataSet();
-
-            adapter.Fill(ds, "KhachHang");
-            dataGridView1.DataSource = ds.Tables["KhachHang"];
-
-            con.Close();
 
         }
 
-        private void label2_Click(object sender, EventArgs e)
+        private void label1_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void textBox2_TextChanged(object sender, EventArgs e)
+        private void TenDoUong_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void label3_Click(object sender, EventArgs e)
+        private void FormDoUong_Load(object sender, EventArgs e)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    con.Open();
+
+                    string sQuery = "SELECT * FROM DoUong";
+                    SqlDataAdapter adapter = new SqlDataAdapter(sQuery, con);
+                    DataSet ds = new DataSet();
+                    adapter.Fill(ds, "DoUong");
+
+                    if (dataGridView1 != null)
+                    {
+                        dataGridView1.DataSource = ds.Tables["DoUong"];
+                    }
+                    else
+                    {
+                        MessageBox.Show("DataGridView chưa được khởi tạo.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi: {ex.Message}");
+                }
+            }
+        }
+
+        private void FormDoUong_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            MessageBox.Show("Tạm Biệt! Hẹn Gặp Lại Lần sau!", "Thông Báo!!!");
+        }
+
+
+
+        private void label4_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void textBox3_TextChanged(object sender, EventArgs e)
+        private void btnLUU_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void btnLuu_Click(object sender, EventArgs e)
-        {
-            SqlConnection con = new SqlConnection(sCon);
-            try
+            using (SqlConnection con = new SqlConnection(connectionString))
             {
-                con.Open();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Xảy ra lỗi trong quá trình kết nối DB");
-            }
+                try
+                {
+                    con.Open();
 
-            string sMaKH = txtMaKH.Text;
-            string sTenKH= txtTenKH.Text;
-            string sSDT= txtSDT.Text;
-            string sMaUD= txtMaUD.Text;
+                    string sMaDoUong = txtMaDoUong.Text.Trim();
+                    string sTenDoUong = txtTenDoUong.Text.Trim();
+                    string sGia = txtGia.Text.Trim();
+                    string sKichCo = txtKichCo.Text.Trim();
 
-            string sQuery = "insert into khachhang values(@makh, @tenkh, @sdt, @maud)";
-            SqlCommand cmd= new SqlCommand(sQuery, con);
-            cmd.Parameters.AddWithValue("@makh", sMaKH);
-            cmd.Parameters.AddWithValue("@tenkh", sTenKH);
-            cmd.Parameters.AddWithValue("@sdt", sSDT);
-            cmd.Parameters.AddWithValue("@maud", sMaUD);
+                    if (string.IsNullOrWhiteSpace(sMaDoUong) || string.IsNullOrWhiteSpace(sTenDoUong) ||
+                        string.IsNullOrWhiteSpace(sGia) || string.IsNullOrWhiteSpace(sKichCo))
+                    {
+                        MessageBox.Show("Vui lòng nhập đầy đủ thông tin.");
+                        return;
+                    }
 
-            try
-            {
-                cmd.ExecuteNonQuery();
-                MessageBox.Show("Thêm mới thành công!");
+                    if (!decimal.TryParse(sGia, out decimal gia))
+                    {
+                        MessageBox.Show("Giá phải là một số hợp lệ.");
+                        return;
+                    }
+
+                    string checkQuery = "SELECT COUNT(*) FROM DoUong WHERE MaDoUong = @MaDoUong";
+                    SqlCommand checkCmd = new SqlCommand(checkQuery, con);
+                    checkCmd.Parameters.AddWithValue("@MaDoUong", sMaDoUong);
+
+                    int exists = (int)checkCmd.ExecuteScalar();
+                    if (exists > 0)
+                    {
+                        MessageBox.Show("Mã đồ uống đã tồn tại.");
+                        return;
+                    }
+
+                    string sQuery = "INSERT INTO DoUong (MaDoUong, TenDoUong, Gia, KichCo) VALUES (@MaDoUong, @TenDoUong, @Gia, @KichCo)";
+                    SqlCommand cmd = new SqlCommand(sQuery, con);
+                    cmd.Parameters.AddWithValue("@MaDoUong", sMaDoUong);
+                    cmd.Parameters.AddWithValue("@TenDoUong", sTenDoUong);
+                    cmd.Parameters.AddWithValue("@Gia", gia);
+                    cmd.Parameters.AddWithValue("@KichCo", sKichCo);
+
+                    cmd.ExecuteNonQuery();
+                    MessageBox.Show("Thêm mới thành công!");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Xảy ra lỗi trong quá trình thêm mới: {ex.Message}");
+                }
             }
-            catch (Exception ex) 
-            {
-                MessageBox.Show("Xảy ra lỗi trong quá trình thêm mới");
-            }
-            con.Close();
-
         }
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            txtMaKH.Text = dataGridView1.Rows[e.RowIndex].Cells["MaKhachHang"].Value.ToString();
-            txtTenKH.Text = dataGridView1.Rows[e.RowIndex].Cells["TenKhachHang"].Value.ToString();
-            txtSDT.Text = dataGridView1.Rows[e.RowIndex].Cells["SDT"].Value.ToString();
-            txtMaUD.Text = dataGridView1.Rows[e.RowIndex].Cells["MaUuDai"].Value.ToString();
-            txtMaKH.Enabled = false;
-        }
-
-        private void btnSua_Click(object sender, EventArgs e)
-        {
-            SqlConnection con = new SqlConnection(sCon);
             try
             {
-                con.Open();
+                if (e.RowIndex >= 0) 
+                {
+                    DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+
+                    txtMaDoUong.Text = row.Cells["MaDoUong"].Value.ToString();
+                    txtTenDoUong.Text = row.Cells["TenDoUong"].Value.ToString();
+                    txtGia.Text = row.Cells["Gia"].Value.ToString();
+                    txtKichCo.Text = row.Cells["KichCo"].Value.ToString();
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Xảy ra lỗi trong quá trình kết nối DB");
+                MessageBox.Show($"Xảy ra lỗi: {ex.Message}");
             }
-
-            string sMaKH = txtMaKH.Text;
-            string sTenKH = txtTenKH.Text;
-            string sSDT = txtSDT.Text;
-            string sMaUD = txtMaUD.Text;
-
-            string sQuery = "update khachhang set TenKhachHang=@tenkh, SDT=@sdt, MaUuDai=@maud "
-                + "where MaKhachHang=@makh";
-            SqlCommand cmd = new SqlCommand(sQuery, con);
-            cmd.Parameters.AddWithValue("@makh", sMaKH);
-            cmd.Parameters.AddWithValue("@tenkh", sTenKH);
-            cmd.Parameters.AddWithValue("@sdt", sSDT);
-            cmd.Parameters.AddWithValue("@maud", sMaUD);
-
-            try
-            {
-                cmd.ExecuteNonQuery();
-                MessageBox.Show("Cập nhật thành công!");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Xảy ra lỗi trong quá trình cập nhật");
-            }
-            con.Close();
-
+            txtMaDoUong.Enabled = false;
         }
 
-        private void btnXoa_Click(object sender, EventArgs e)
+        private void btnSUA_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show("Có chắc chắn xoá không?", "Thông báo", MessageBoxButtons.OKCancel);
-            if (result == DialogResult.OK)
+            using (SqlConnection con = new SqlConnection(connectionString))
             {
-                SqlConnection con = new SqlConnection(sCon);
                 try
                 {
                     con.Open();
+
+                    string sMaDoUong = txtMaDoUong.Text.Trim();
+                    string sTenDoUong = txtTenDoUong.Text.Trim();
+                    string sGia = txtGia.Text.Trim();
+                    string sKichCo = txtKichCo.Text.Trim();
+
+                    if (string.IsNullOrWhiteSpace(sTenDoUong) || string.IsNullOrWhiteSpace(sGia) || string.IsNullOrWhiteSpace(sKichCo))
+                    {
+                        MessageBox.Show("Vui lòng nhập đầy đủ thông tin (trừ Mã Đồ Uống).");
+                        return;
+                    }
+
+                    if (!decimal.TryParse(sGia, out decimal gia))
+                    {
+                        MessageBox.Show("Giá phải là một số hợp lệ.");
+                        return;
+                    }
+
+                    string sQuery = "UPDATE DoUong SET TenDoUong = @TenDoUong, Gia = @Gia, KichCo = @KichCo WHERE MaDoUong = @OriginalMaDoUong";
+                    SqlCommand cmd = new SqlCommand(sQuery, con);
+
+                    cmd.Parameters.AddWithValue("@OriginalMaDoUong", txtMaDoUong.Text.Trim()); 
+                    cmd.Parameters.AddWithValue("@TenDoUong", sTenDoUong);
+                    cmd.Parameters.AddWithValue("@Gia", gia);
+                    cmd.Parameters.AddWithValue("@KichCo", sKichCo);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (rowsAffected > 0)
+                    {
+                        MessageBox.Show("Cập nhật thành công!");
+                        txtTenDoUong.Text = "";
+                        txtGia.Text = "";
+                        txtKichCo.Text = "";
+                    }
+                    else
+                    {
+                        MessageBox.Show("Không tìm thấy mã đồ uống để cập nhật.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Xảy ra lỗi trong quá trình kết nối DB");
+                    MessageBox.Show($"Xảy ra lỗi trong quá trình cập nhật: {ex.Message}");
                 }
+            }
+        }
 
-                string sMaKH = txtMaKH.Text;
-                string sQuery = "delete khachhang where MaKhachHang=@makh";
-                SqlCommand cmd = new SqlCommand(sQuery, con);
-                cmd.Parameters.AddWithValue("@makh", sMaKH);
-
+        private void btnXOA_Click(object sender, EventArgs e)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
                 try
                 {
-                    cmd.ExecuteNonQuery();
-                    MessageBox.Show("Xoá thành công!");
+                    con.Open();
+
+                    string maDoUong = txtMaDoUong.Text.Trim();
+
+                    if (string.IsNullOrEmpty(maDoUong))
+                    {
+                        MessageBox.Show("Vui lòng chọn một bản ghi để xóa.");
+                        return;
+                    }
+
+                    if (MessageBox.Show("Bạn có chắc chắn muốn xóa đồ uống này?", "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.No)
+                    {
+                        return;
+                    }
+
+                    string query = "DELETE FROM DoUong WHERE MaDoUong = @MaDoUong";
+                    SqlCommand cmd = new SqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@MaDoUong", maDoUong);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (rowsAffected > 0)
+                    {
+                        MessageBox.Show("Xóa bản ghi thành công!");
+                        LoadDataGridView();
+                        ClearTextBoxes();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Không tìm thấy bản ghi để xóa.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Xảy ra lỗi trong quá trình xoá");
+                    MessageBox.Show($"Lỗi khi xóa bản ghi: {ex.Message}");
                 }
-                con.Close();
             }
-
-
+        }
+        private void LoadDataGridView()
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    con.Open();
+                    string query = "SELECT * FROM DoUong";
+                    SqlDataAdapter adapter = new SqlDataAdapter(query, con);
+                    DataSet ds = new DataSet();
+                    adapter.Fill(ds, "DoUong");
+                    dataGridView1.DataSource = ds.Tables["DoUong"];
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi tải dữ liệu: {ex.Message}");
+                }
+            }
+        }
+        private void ClearTextBoxes()
+        {
+            txtMaDoUong.Text = "";
+            txtTenDoUong.Text = "";
+            txtGia.Text = "";
+            txtKichCo.Text = "";
         }
     }
 }
