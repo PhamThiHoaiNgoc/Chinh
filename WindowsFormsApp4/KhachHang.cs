@@ -11,10 +11,10 @@ using System.Windows.Forms;
 
 namespace BTN
 {
-    public partial class Ngoc : Form
+    public partial class KhachHang : Form
     {
         string sCon = "Data Source=ADMIN-PC;Initial Catalog=Banhang;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
-        public Ngoc()
+        public KhachHang()
         {
             InitializeComponent();
         }
@@ -26,7 +26,7 @@ namespace BTN
             {
                 con.Open();
             }
-            catch (Exception ex1)
+            catch (Exception ex)
             {
                 MessageBox.Show("Xảy ra lỗi trong quá trình kết nối DB");
             }
@@ -72,15 +72,31 @@ namespace BTN
             catch (Exception ex)
             {
                 MessageBox.Show("Xảy ra lỗi trong quá trình kết nối DB");
+                return;
             }
 
-            string sMaKH = txtMaKH.Text;
-            string sTenKH= txtTenKH.Text;
-            string sSDT= txtSDT.Text;
-            string sMaUD= txtMaUD.Text;
+            string sTenKH = txtTenKH.Text;
+            string sSDT = txtSDT.Text;
+            string sMaUD = txtMaUD.Text;
 
-            string sQuery = "insert into khachhang values(@makh, @tenkh, @sdt, @maud)";
-            SqlCommand cmd= new SqlCommand(sQuery, con);
+            // Call the SQL function to generate a new MaKhachHang
+            string sMaKH = null;
+            try
+            {
+                string sFunctionQuery = "SELECT dbo.MaKHACHHANGNew()";
+                SqlCommand cmdFunction = new SqlCommand(sFunctionQuery, con);
+                sMaKH = cmdFunction.ExecuteScalar().ToString();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Xảy ra lỗi trong quá trình lấy mã khách hàng mới");
+                con.Close();
+                return;
+            }
+
+            // Insert the new customer
+            string sQuery = "INSERT INTO khachhang VALUES(@makh, @tenkh, @sdt, @maud)";
+            SqlCommand cmd = new SqlCommand(sQuery, con);
             cmd.Parameters.AddWithValue("@makh", sMaKH);
             cmd.Parameters.AddWithValue("@tenkh", sTenKH);
             cmd.Parameters.AddWithValue("@sdt", sSDT);
@@ -91,13 +107,16 @@ namespace BTN
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Thêm mới thành công!");
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 MessageBox.Show("Xảy ra lỗi trong quá trình thêm mới");
             }
-            con.Close();
-
+            finally
+            {
+                con.Close();
+            }
         }
+
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -176,9 +195,17 @@ namespace BTN
                     MessageBox.Show("Xảy ra lỗi trong quá trình xoá");
                 }
                 con.Close();
+
             }
 
 
+        }
+
+        private void btVe_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+            var TrangChu = new TrangChu();
+            TrangChu.Show();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace BTN
 {
-    partial class Ngoc
+    partial class KhachHang
     {
         /// <summary>
         /// Required designer variable.
@@ -40,6 +40,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.btnSua = new System.Windows.Forms.Button();
             this.btnXoa = new System.Windows.Forms.Button();
+            this.btVe = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -134,7 +135,7 @@
             this.label4.AutoSize = true;
             this.label4.BackColor = System.Drawing.Color.Transparent;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(23, 123);
+            this.label4.Location = new System.Drawing.Point(45, 120);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(74, 16);
             this.label4.TabIndex = 8;
@@ -164,12 +165,23 @@
             this.btnXoa.UseVisualStyleBackColor = false;
             this.btnXoa.Click += new System.EventHandler(this.btnXoa_Click);
             // 
-            // Form1
+            // btVe
+            // 
+            this.btVe.Location = new System.Drawing.Point(546, 415);
+            this.btVe.Name = "btVe";
+            this.btVe.Size = new System.Drawing.Size(108, 23);
+            this.btVe.TabIndex = 25;
+            this.btVe.Text = "Về Trang Chủ";
+            this.btVe.UseVisualStyleBackColor = true;
+            this.btVe.Click += new System.EventHandler(this.btVe_Click);
+            // 
+            // KhachHang
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = global::WindowsFormsApp4.Properties.Resources.bg;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btVe);
             this.Controls.Add(this.btnXoa);
             this.Controls.Add(this.btnSua);
             this.Controls.Add(this.txtMaUD);
@@ -182,7 +194,7 @@
             this.Controls.Add(this.txtTenKH);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.dataGridView1);
-            this.Name = "Form1";
+            this.Name = "KhachHang";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
@@ -205,6 +217,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button btnSua;
         private System.Windows.Forms.Button btnXoa;
+        private System.Windows.Forms.Button btVe;
     }
 }
 
